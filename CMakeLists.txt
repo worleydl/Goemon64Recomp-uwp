@@ -29,6 +29,11 @@ if (CMAKE_SYSTEM_NAME MATCHES "Linux")
     option(RECOMP_FLATPAK "Configure the build for Flatpak compatibility." OFF)
 endif()
 
+option(UWP "Build in UWP compatibility mode (static lib launched externally)" OFF)
+if(UWP)
+    add_compile_definitions(_UWP)
+endif()
+
 # Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
     cmake_policy(SET CMP0135 NEW)
@@ -145,7 +150,11 @@ add_custom_command(OUTPUT
 )
 
 # Main executable
-add_executable(Goemon64Recompiled)
+if(UWP)
+    add_library(Goemon64Recompiled STATIC)
+else()
+    add_executable(Goemon64Recompiled)
+endif()
 
 set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp
@@ -274,6 +283,7 @@ if (WIN32)
         ${sdl2_SOURCE_DIR}/lib/x64
     )
 
+    if(NOT UWP)
     # Copy SDL2 and dxc DLLs to output folder as post build step
     add_custom_command(TARGET Goemon64Recompiled POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -293,6 +303,7 @@ if (WIN32)
 
     target_sources(Goemon64Recompiled PRIVATE ${CMAKE_SOURCE_DIR}/icons/app.rc)
     target_link_libraries(Goemon64Recompiled PRIVATE SDL2)
+    endif()
 endif()
 
 if (APPLE)

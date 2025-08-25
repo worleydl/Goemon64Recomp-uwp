@@ -3,9 +3,14 @@
 #include "nfd.h"
 #include "RmlUi/Core.h"
 
+#ifdef _UWP
+extern "C" __declspec(dllimport) void uwp_PickAFile(char* path);
+#endif
+
 namespace goemon64 {
     // MARK: - Internal Helpers
     void perform_file_dialog_operation(const std::function<void(bool, const std::filesystem::path&)>& callback) {
+#ifndef _UWP
         nfdnchar_t* native_path = nullptr;
         nfdresult_t result = NFD_OpenDialogN(&native_path, nullptr, 0, nullptr);
 
@@ -16,6 +21,16 @@ namespace goemon64 {
             path = std::filesystem::path{native_path};
             NFD_FreePathN(native_path);
         }
+#else
+        char buffer[256];
+        std::filesystem::path path;
+        uwp_PickAFile(buffer);
+        bool success = strlen(buffer) > 0;
+
+        if (success) {
+            path = std::filesystem::path(buffer);
+        }
+#endif
 
         callback(success, path);
     }

@@ -12,7 +12,9 @@
 
 #include "ultramodern/ultra64.h"
 #include "ultramodern/ultramodern.hpp"
+#ifndef _UWP
 #define SDL_MAIN_HANDLED
+#endif
 #ifdef _WIN32
 #include "SDL.h"
 #else
